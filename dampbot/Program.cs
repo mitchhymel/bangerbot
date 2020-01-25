@@ -248,7 +248,7 @@ namespace dampbot
 
             result += "+-----BANGERS---RANKINGS-----+\n";
             List<CustomDiscordUser> certifiedSorted = new List<CustomDiscordUser>(map.Values);
-            certifiedSorted.Sort((a, b) => a.Certified.CompareTo(b.Certified));
+            certifiedSorted.Sort((a, b) => b.Certified.CompareTo(a.Certified));
             foreach (CustomDiscordUser user in certifiedSorted)
             {
                 result += $"{user.User.Username}\t{user.Certified}\n";
@@ -258,7 +258,7 @@ namespace dampbot
 
             result += "+-----CLANGERS--RANKINGS-----+\n";
             List<CustomDiscordUser> notCertifiedSorted = new List<CustomDiscordUser>(map.Values);
-            notCertifiedSorted.Sort((a, b) => a.NotCertified.CompareTo(b.NotCertified));
+            notCertifiedSorted.Sort((a, b) => b.NotCertified.CompareTo(a.NotCertified));
             foreach (CustomDiscordUser user in notCertifiedSorted)
             {
                 result += $"{user.User.Username}\t{user.NotCertified}\n";
