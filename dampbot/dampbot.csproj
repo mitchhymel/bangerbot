@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="3.2.3" />
+    <PackageReference Include="SpotifyAPI.Web" Version="4.2.2" />
+    <PackageReference Include="SpotifyAPI.Web.Auth" Version="4.2.2" />
   </ItemGroup>
 
 </Project>
