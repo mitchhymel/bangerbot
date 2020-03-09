@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace dampbot
 {
-    public class Program
+    public class Bot
     {
         static SpotifyWebAPI Spotify;
 

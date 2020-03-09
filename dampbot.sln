@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dampbot", "dampbot\dampbot.csproj", "{B12444F1-A36C-4C93-A5A1-E2E052F7A89C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dampbot", "dampbot\dampbot.csproj", "{B12444F1-A36C-4C93-A5A1-E2E052F7A89C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{FAD14FD2-B380-455A-9509-FAAE8E429972}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{BFB0B485-9EC9-48BA-95BE-78B6C44BE0BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{B12444F1-A36C-4C93-A5A1-E2E052F7A89C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B12444F1-A36C-4C93-A5A1-E2E052F7A89C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B12444F1-A36C-4C93-A5A1-E2E052F7A89C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAD14FD2-B380-455A-9509-FAAE8E429972}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAD14FD2-B380-455A-9509-FAAE8E429972}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAD14FD2-B380-455A-9509-FAAE8E429972}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAD14FD2-B380-455A-9509-FAAE8E429972}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFB0B485-9EC9-48BA-95BE-78B6C44BE0BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFB0B485-9EC9-48BA-95BE-78B6C44BE0BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFB0B485-9EC9-48BA-95BE-78B6C44BE0BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFB0B485-9EC9-48BA-95BE-78B6C44BE0BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
