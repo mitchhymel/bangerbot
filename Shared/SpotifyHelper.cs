@@ -145,5 +145,15 @@ namespace dampbot
 
             return tracksToAdd;
         }
+
+        public async Task ClearSpotifyPlaylist(string playlistId)
+        {
+            var emptyList = new List<string>();
+            var response =  await API.ReplacePlaylistTracksAsync(playlistId, emptyList);
+            if (response.HasError())
+            {
+                Console.WriteLine($"Error while clearing playlist: {response.Error}");
+            }
+        }
     }
 }

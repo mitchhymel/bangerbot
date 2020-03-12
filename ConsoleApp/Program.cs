@@ -45,6 +45,11 @@ namespace ConsoleApp
                 }
             }
 
+            // reverse tracksToAdd
+            tracksToAdd.Reverse();
+
+            // clear spotify playlist
+            await Spotify.ClearSpotifyPlaylist(Secrets.SPOTIFY_PLAYLIST_ID);
             await Spotify.AddTracksToSpotifyPlaylist(Secrets.SPOTIFY_PLAYLIST_ID, tracksToAdd);
         }
     }
