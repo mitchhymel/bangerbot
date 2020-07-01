@@ -4,6 +4,7 @@ using SpotifyAPI.Web.Auth;
 using SpotifyAPI.Web.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -98,16 +99,26 @@ namespace dampbot
                 tracks.Add(track);
             }
 
+            tracks.RemoveAll(x => x.Uri == null);
             List<string> trackUris = tracks.ConvertAll(x => x.Uri);
-            var response = await API.AddPlaylistTracksAsync(playlistId, trackUris);
-            if (response.HasError())
+            return await AddAllTracksToPlaylist(playlistId, trackUris);
+        }
+
+        private async Task<string> AddAllTracksToPlaylist(string playlistId, List<string> trackUris)
+        {
+            int incr = 100;
+            for (int i = 0; i < trackUris.Count; i+=incr)
             {
-                return $"Something fucky happened: {response.Error.Message}";
+                int maxTracksToAdd = Math.Min(incr, trackUris.Count - i);
+                List<string> subSet = trackUris.GetRange(i, maxTracksToAdd);
+                var response = await API.AddPlaylistTracksAsync(playlistId, subSet);
+                if (response.HasError())
+                {
+                    return $"Something fucky happened: {response.Error.Message}";
+                }
             }
-            else
-            {
-                return "Banger Certification Testing begins!";
-            }
+
+            return "Banger Certification Testing begins!";
         }
 
         private async Task<List<PlaylistTrack>> GetAllTracksInPlaylist(string id)
