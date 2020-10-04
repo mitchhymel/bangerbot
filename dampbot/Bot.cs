@@ -1,13 +1,17 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using Newtonsoft.Json;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
 using SpotifyAPI.Web.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using Unosquare.Labs.EmbedIO;
 
 namespace dampbot
 {
@@ -87,10 +91,10 @@ namespace dampbot
 
         private static async Task OnMessageCreated(MessageCreateEventArgs e)
         {
-            if (e.Message.ChannelId != Secrets.BANGER_CHANNEL_ID && e.Message.ChannelId != Secrets.TEST_BANGER_CHANNEL_ID)
-            {
-                return;
-            }
+            //if (e.Message.ChannelId != Secrets.BANGER_CHANNEL_ID && e.Message.ChannelId != Secrets.TEST_BANGER_CHANNEL_ID)
+            //{
+            //    return;
+            //}
 
             bool bangerBotMentioned = false;
             foreach (var user in e.Message.MentionedUsers)
@@ -121,63 +125,151 @@ namespace dampbot
             }
             else if (bangerBotMentioned)
             {
-
-                DiscordEmoji certified = DiscordEmoji.FromName(Discord, ":certified:");
-                DiscordEmoji notCertified = DiscordEmoji.FromName(Discord, ":notcertified:");
-
-                var messages = await GetAllDiscordMessages(e);
-                Dictionary<string, CustomDiscordUser> map = new Dictionary<string, CustomDiscordUser>();
-                foreach (DiscordMessage message in messages)
+                if (e.Message.Content.Contains("scoreboard"))
                 {
-                    if (message.Reactions.Count > 0)
-                    {
-                        int certifiedCount = 0;
-                        int notCertifiedCount = 0;
-                        foreach (DiscordReaction reaction in message.Reactions)
-                        {
-                            if (reaction.Emoji == certified)
-                            {
-                                certifiedCount += reaction.Count;
-                            }
-                            else if (reaction.Emoji == notCertified)
-                            {
-                                notCertifiedCount += reaction.Count;
-                            }
-                        }
-
-                        DiscordUser author = message.Author;
-                        CustomDiscordUser custom;
-                        if (map.ContainsKey(author.Username))
-                        {
-                            custom = map[author.Username];
-                        }
-                        else
-                        {
-                            custom = new CustomDiscordUser(author);
-                        }
-
-                        custom.Certified += certifiedCount;
-                        custom.NotCertified += notCertifiedCount;
-                        map[author.Username] = custom;
-                    }
-                }
-
-                if (map.Keys.Count > 0)
-                {
-                    string result = GetBangerClangerString(map);
-                    await e.Message.RespondAsync(result);
+                    await GetReactionScoreBoard(e);
                 }
                 else
                 {
-                    await e.Message.RespondAsync(":grimace: No bangers found");
+                    await GetBangerClangerResults(e);
                 }
             }
         }
 
-        private static async Task<List<DiscordMessage>> GetAllDiscordMessages(MessageCreateEventArgs e)
+        private static async Task GetReactionScoreBoard(MessageCreateEventArgs e)
+        {
+            var userGotReactionMap = new Dictionary<DiscordUser, Dictionary<DiscordEmoji, int>>();
+            var userReactedWithMap = new Dictionary<DiscordUser, Dictionary<DiscordEmoji, int>>();
+            var guild = await Discord.GetGuildAsync(Secrets.GUILD_ID);
+            foreach (var channel in guild.Channels)
+            {
+                var messages = await GetAllDiscordMessages(channel.Id);
+                foreach (var message in messages)
+                {
+                    var author = message.Author;
+                    var reactions = message.Reactions;
+                    foreach (var reaction in reactions)
+                    {
+                        Dictionary<DiscordEmoji, int> gotReaction;
+                        if (userGotReactionMap.ContainsKey(author))
+                        {
+                            gotReaction = userGotReactionMap[author];
+                        }
+                        else
+                        {
+                            gotReaction = new Dictionary<DiscordEmoji, int>();
+                        }
+
+                        if (gotReaction.ContainsKey(reaction.Emoji))
+                        {
+                            gotReaction[reaction.Emoji] += reaction.Count;
+                        }
+                        else
+                        {
+                            gotReaction.Add(reaction.Emoji, reaction.Count);
+                        }
+
+                        if (!userGotReactionMap.ContainsKey(author))
+                        {
+                            userGotReactionMap.Add(author, gotReaction);
+                        }
+
+
+
+                        Dictionary<DiscordEmoji, int> reactedWith;
+                        var usersReacted = await message.GetReactionsAsync(reaction.Emoji);
+                        foreach (var userReacted in usersReacted)
+                        {
+                            if (userReactedWithMap.ContainsKey(userReacted))
+                            {
+                                reactedWith = userReactedWithMap[userReacted];
+                            }
+                            else
+                            {
+                                reactedWith = new Dictionary<DiscordEmoji, int>();
+                            }
+
+                            if (reactedWith.ContainsKey(reaction.Emoji))
+                            {
+                                reactedWith[reaction.Emoji] += 1;
+                            }
+                            else
+                            {
+                                reactedWith.Add(reaction.Emoji, 1);
+                            }
+
+                            if (!userReactedWithMap.ContainsKey(userReacted))
+                            {
+                                userReactedWithMap.Add(userReacted, reactedWith);
+                            }
+                        }
+                        
+                    }
+                }
+            }
+
+            await e.Message.RespondAsync(JsonConvert.SerializeObject(userReactedWithMap));
+            await e.Message.RespondAsync(JsonConvert.SerializeObject(userGotReactionMap));
+        }
+
+
+        private static async Task GetBangerClangerResults(MessageCreateEventArgs e)
+        {
+            DiscordEmoji certified = DiscordEmoji.FromName(Discord, ":certified:");
+            DiscordEmoji notCertified = DiscordEmoji.FromName(Discord, ":notcertified:");
+
+            var messages = await GetAllDiscordMessages(e.Message.ChannelId);
+            Dictionary<string, CustomDiscordUser> map = new Dictionary<string, CustomDiscordUser>();
+            foreach (DiscordMessage message in messages)
+            {
+                if (message.Reactions.Count > 0)
+                {
+                    int certifiedCount = 0;
+                    int notCertifiedCount = 0;
+                    foreach (DiscordReaction reaction in message.Reactions)
+                    {
+                        if (reaction.Emoji == certified)
+                        {
+                            certifiedCount += reaction.Count;
+                        }
+                        else if (reaction.Emoji == notCertified)
+                        {
+                            notCertifiedCount += reaction.Count;
+                        }
+                    }
+
+                    DiscordUser author = message.Author;
+                    CustomDiscordUser custom;
+                    if (map.ContainsKey(author.Username))
+                    {
+                        custom = map[author.Username];
+                    }
+                    else
+                    {
+                        custom = new CustomDiscordUser(author);
+                    }
+
+                    custom.Certified += certifiedCount;
+                    custom.NotCertified += notCertifiedCount;
+                    map[author.Username] = custom;
+                }
+            }
+
+            if (map.Keys.Count > 0)
+            {
+                string result = GetBangerClangerString(map);
+                await e.Message.RespondAsync(result);
+            }
+            else
+            {
+                await e.Message.RespondAsync(":grimace: No bangers found");
+            }
+        }
+
+        private static async Task<List<DiscordMessage>> GetAllDiscordMessages(ulong channelId)
         {
             List<DiscordMessage> result = new List<DiscordMessage>();
-            var channel = await Discord.GetChannelAsync(e.Message.ChannelId);
+            var channel = await Discord.GetChannelAsync(channelId);
 
             bool keepLooping = true;
             ulong? before = null;
